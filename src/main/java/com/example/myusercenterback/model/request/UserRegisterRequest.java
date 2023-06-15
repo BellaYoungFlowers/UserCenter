@@ -18,5 +18,6 @@ public class UserRegisterRequest implements Serializable {
 	public String userAccount;
 	public String userPassword;
 	public String  checkPassword;
+	private static final long serialVersionUID = 1L;
 
 }

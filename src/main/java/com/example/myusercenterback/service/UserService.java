@@ -2,9 +2,7 @@ package com.example.myusercenterback.service;
 
 import com.example.myusercenterback.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.springframework.http.HttpRequest;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -14,6 +12,7 @@ import java.util.List;
 * @createDate 2023-06-11 09:48:19
 */
 public interface UserService extends IService<User> {
+
 	/**
 	 *用户注册
 	 */
@@ -22,8 +21,10 @@ public interface UserService extends IService<User> {
 	/**
 	 * 用户登录
 	 */
-	User UserLogin(String userAccount, String userPassword, HttpServletRequest httpServlet);
+	User UserLogin(String userAccount, String userPassword, HttpServletRequest request);
 
-	//根据tag搜索用户
+    User getSafetyUser(User originalUser);
+
+    //根据tag搜索用户
 	List<User> getUsersByTags(List<String> tagsNameList);
 }

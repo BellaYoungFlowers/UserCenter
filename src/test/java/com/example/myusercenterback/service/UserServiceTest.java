@@ -74,12 +74,17 @@ class UserServiceTest {
 		Assert.assertEquals(-1,result);
 
 		//正常注册
-		userAccount = "werrhhhhhhh";
-		userPassword = "werrhhhhhhh";
-		encryptedPassword = "werrhhhhhhh";
+		userAccount = "Bella";
+		userPassword = "Bella123456";
+		encryptedPassword = "Bella123456";
 		result = userService.UserRegister(userAccount, userPassword, encryptedPassword);
-		// Assert.assertTrue(result > 0);
-		Assert.assertEquals(-1,result);
+		Assert.assertTrue(result > 0);
+
+	}
+
+	@org.junit.Test
+	public void userLogin() {
+
 
 	}
 
@@ -91,4 +96,7 @@ class UserServiceTest {
 		Assert.assertNotNull(usersByTags);
 
 	}
+
+
+
 }

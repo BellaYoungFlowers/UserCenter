@@ -1,7 +1,8 @@
 package com.example.myusercenterback;
 
-// import com.example.myusercenterback.mapper.UserMapper;
-// import com.example.myusercenterback.model.User;
+ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+ import com.example.myusercenterback.mapper.UserMapper;
+ import com.example.myusercenterback.model.User;
 import org.junit.Assert;
 // import org.junit.jupiter.api.Test;
 import org.junit.Test;
@@ -17,16 +18,17 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 public class SampleTest {
 
-    // @Autowired
-    // // @Resource
-    // private UserMapper userMapper;
-    //
-    // @Test
-    // public void testSelect() {
-    //     System.out.println(("----- selectAll method test ------"));
-    //     List<User> userList = userMapper.selectList(null);
-    //     Assert.assertEquals(5, userList.size());
-    //     userList.forEach(System.out::println);
-    // }
+     @Autowired
+     // @Resource
+     private UserMapper userMapper;
+
+     @Test
+     public void testSelect() {
+         System.out.println(("----- selectAll method test ------"));
+         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+         List<User> userList = userMapper.selectList(queryWrapper);
+         Assert.assertEquals(1, userList.size());
+         userList.forEach(System.out::println);
+     }
 
 }

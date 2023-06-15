@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static net.sf.jsqlparser.util.validation.metadata.NamedObject.user;
+import static com.example.myusercenterback.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
 * @author LuckyME
@@ -78,7 +78,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 	}
 
 	@Override
-	public User UserLogin(String userAccount, String userPassword, HttpServletRequest httpServlet) {
+	public User UserLogin(String userAccount, String userPassword, HttpServletRequest request) {
 		//校验
 		if (StringUtils.isAnyBlank(userAccount, userPassword)) {
 			return null;
@@ -107,25 +107,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 		//用户脱敏
 		User safetyUser = getSafetyUser(user);
 
-		//设置用户的登录状态(这是干什么)
-		httpServlet.setAttribute("session",safetyUser);
+		//设置用户的登录状态
+		request.getSession().setAttribute(USER_LOGIN_STATE,safetyUser);
 
 		return safetyUser;
 	}
 
 
-	public User getSafetyUser(User user) {
+	@Override
+	public User getSafetyUser(User originalUser) {
 		User SafeUser = new User();
-		SafeUser.setId(user.getId());
-		SafeUser.setUsername(user.getUsername());
-		SafeUser.setUserAccount(user.getUserAccount());
-		SafeUser.setAvatarUrl(user.getAvatarUrl());
-		SafeUser.setGender(user.getGender());
-		SafeUser.setPhone(user.getPhone());
-		SafeUser.setEmail(user.getEmail());
-		SafeUser.setUserStatus(user.getUserStatus());
-		SafeUser.setCreateTime(user.getCreateTime());
-		SafeUser.setUpdateTime(user.getUpdateTime());
+		SafeUser.setId(originalUser.getId());
+		SafeUser.setUsername(originalUser.getUsername());
+		SafeUser.setUserAccount(originalUser.getUserAccount());
+		SafeUser.setAvatarUrl(originalUser.getAvatarUrl());
+		SafeUser.setGender(originalUser.getGender());
+		SafeUser.setPhone(originalUser.getPhone());
+		SafeUser.setEmail(originalUser.getEmail());
+		SafeUser.setTags(originalUser.getTags());
+		SafeUser.setUserRole(originalUser.getUserRole());
+		SafeUser.setUserStatus(originalUser.getUserStatus());
+		SafeUser.setCreateTime(originalUser.getCreateTime());
+		SafeUser.setUpdateTime(originalUser.getUpdateTime());
 		return SafeUser;
 
 	}
@@ -148,31 +151,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 		 */
 		List<User> userList = userMapper.selectList(null);
 		Gson gson = new Gson();
+
+
+		//脱敏 foreach写法
+//		userList.forEach(user->{
+//			getSafetyUser(user);
+//		});
+		//脱敏 lambda写法
+//		userList.forEach(this::getSafetyUser);
+		//脱敏 流操作
+//		userList.stream().map(user ->
+//			getSafetyUser(user)
+//		).collect(Collectors.toList());
+		//脱敏 流操作 lambda写法
+//		userList.stream().map(this::getSafetyUser
+//		).collect(Collectors.toList());
+
+
+
 		// for (User user : userList) {
 		// 	String tags = user.getTags();
-		// 	Set<String> tagsSet = gson.fromJson(tags, new TypeToken<Set<String>>(){}.getType());
+		// 	Set<String> tagsSet = gson.fromJson(tags, new Type
+		//		// 		if(!tagsSet.contains(tag)){
+		//		// 			return false;Token<Set<String>>(){}.getType());
 		// 	for (String tag : tagsNameList) {
-		// 		if(!tagsSet.contains(tag)){
-		// 			return false;
 		// 		}
 		// 	}
 		// 	return true;
 		// }
-
-		//脱敏 foreach写法
-		userList.forEach(user->{
-			getSafetyUser(user);
-		});
-		//脱敏 lambda写法
-		userList.forEach(this::getSafetyUser);
-		//脱敏 流操作
-		userList.stream().map(user ->
-			getSafetyUser(user)
-		).collect(Collectors.toList());
-		//脱敏 流操作 lambda写法
-		userList.stream().map(this::getSafetyUser
-		).collect(Collectors.toList());
-
 
 
 

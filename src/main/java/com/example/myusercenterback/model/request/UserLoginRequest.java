@@ -17,4 +17,5 @@ import java.io.Serializable;
 public class UserLoginRequest implements Serializable {
 	public String userAccount;
 	public String userPassword;
+	private static final long serialVersionUID = 1L;
 }
