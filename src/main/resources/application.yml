@@ -5,6 +5,8 @@ spring:
     password: 123456
 server:
   port: 8001
+  servlet:
+    context-path: /api
 
 mybatis-plus:
   configuration:
