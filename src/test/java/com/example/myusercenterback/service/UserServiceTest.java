@@ -2,6 +2,7 @@ package com.example.myusercenterback.service;
 import java.util.*;
 
 import com.example.myusercenterback.model.User;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,15 @@ import static org.junit.jupiter.api.Assertions.*;
  * @Create 2023/6/11 9:52
  * @Version 1.0
  */
+@Slf4j
 @SpringBootTest
 class UserServiceTest {
 	@Autowired
 	private UserService userService;
 
+	/**
+	 * 简单测试mybaits的sava方法
+	 */
 	@Test
 	public void testaddUser(){
 		User user = new User();
@@ -37,6 +42,67 @@ class UserServiceTest {
 		System.out.println(user.getId());
 		assertEquals(true, save);
 	}
+
+	/**
+	 * 测试foreach的插入
+	 */
+	@Test
+	public void testaddUserList(){
+		User user = new User();
+		user.setUsername("a");
+		user.setUserAccount("a");
+		user.setUserPassword("a");
+
+		User user1 = new User();
+		user1.setUsername("a1");
+		user1.setUserAccount("a1");
+		user1.setUserPassword("a1");
+
+
+		User user2 = new User();
+		user2.setUsername("a2");
+		user2.setUserAccount("a2");
+		user2.setUserPassword("a2");
+
+		List<User> userList = new ArrayList();
+		userList.add(user);
+		userList.add(user1);
+		userList.add(user2);
+
+//		boolean save = userService.saveBatch(userList);
+
+		//自己写的foreach 插入
+		userService.testForeachInsert(userList);
+	}
+
+
+	/**
+	 *测试foreach的更新
+	 */
+	@Test
+	public void testupdateUserList(){
+		User user = new User();
+		user.setId(10L);
+		user.setUsername("7r7");
+
+		User user1 = new User();
+		user1.setId(11L);
+		user1.setUsername("r77");
+
+
+		User user2 = new User();
+		user2.setId(12L);
+		user2.setUsername("r77");
+
+		List<User> userList = new ArrayList();
+		userList.add(user);
+		userList.add(user1);
+		userList.add(user2);
+
+		//自己写的foreach 插入
+		userService.testForeachUpdate(userList);
+	}
+
 
 	@Test
 	void userRegister() {
@@ -98,5 +164,10 @@ class UserServiceTest {
 	}
 
 
-
+	@Test
+	public void testForeachIn() {
+		List<Long> ids = Arrays.asList(10L, 12L, 13L);
+		List<User> users = userService.testForeachIn(ids);
+		log.info(users.toString());
+	}
 }

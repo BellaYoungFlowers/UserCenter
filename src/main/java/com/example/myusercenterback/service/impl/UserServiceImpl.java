@@ -36,6 +36,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 	public static final  String SALT = "abc";
 
+
+	//测试foreach 插入方法
+	@Override
+    public void testForeachInsert(List<User> users) {
+		userMapper.testForeachInsert(users);
+	}
+
+	//测试foreach 更新方法
+	@Override
+	public void testForeachUpdate(List<User> userList) {
+		userMapper.testForeachUpdate(userList);
+
+	}
+
+	//测试foreach in
+	@Override
+    public List<User> testForeachIn(List<Long> ids) {
+        return userMapper.testForeachIn(ids);
+    }
+
+
 	@Override
 	public long UserRegister(String userAccount, String userPassword, String checkPassword) {
 		//校验账户 密码 校验密码
@@ -132,6 +153,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 		return SafeUser;
 
 	}
+
+
 	//根据tag搜索用户
 	@Override
 	public List<User> getUsersByTags(List<String> tagsNameList) {

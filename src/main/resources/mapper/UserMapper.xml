@@ -27,4 +27,32 @@
         phone,email,userStatus,userRole,tags,
         createTime,updateTime,isDelete
     </sql>
+    <insert id="testForeachInsert">
+        insert into user(username,userAccount,userPassword) values
+        <foreach collection="users" separator="," item="user" close=";">
+            (#{user.username},#{user.userAccount},#{user.userPassword})
+        </foreach>
+    </insert>
+
+    <update id="testForeachUpdate">
+        <foreach collection="userList" separator=";" item="user">
+            update user set username = #{user.username} where id = #{user.id}
+        </foreach>
+    </update>
+
+    <select id="testForeachIn" resultType="com.example.myusercenterback.model.User">
+        select * from user
+            <where>
+            <if test="ids!=null and ids.size()>0">
+                id in
+                <foreach collection="ids" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+            </where>
+    </select>
+
+
+
+
 </mapper>

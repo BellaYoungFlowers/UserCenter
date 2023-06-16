@@ -13,6 +13,12 @@ import java.util.List;
 */
 public interface UserService extends IService<User> {
 
+	//测试foreach 插入方法
+	void testForeachInsert(List<User> users);
+
+	//测试foreach in
+	List<User> testForeachIn(List<Long> ids);
+
 	/**
 	 *用户注册
 	 */
@@ -27,4 +33,6 @@ public interface UserService extends IService<User> {
 
     //根据tag搜索用户
 	List<User> getUsersByTags(List<String> tagsNameList);
+
+	void testForeachUpdate(List<User> userList);
 }
