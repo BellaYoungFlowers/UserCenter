@@ -84,6 +84,11 @@ public class User implements Serializable {
     private Date updateTime;
 
     /**
+     * 星球编码
+     */
+    private String planetCode;
+
+    /**
      * 是否删除
      */
     @TableLogic

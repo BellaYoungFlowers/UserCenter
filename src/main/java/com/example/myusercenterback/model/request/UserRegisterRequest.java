@@ -17,7 +17,8 @@ import java.io.Serializable;
 public class UserRegisterRequest implements Serializable {
 	public String userAccount;
 	public String userPassword;
-	public String  checkPassword;
+	public String checkPassword;
+	public String planetCode;
 	private static final long serialVersionUID = 1L;
 
 }

@@ -109,41 +109,42 @@ class UserServiceTest {
 		String userAccount = "";
 		String userPassword = "";
 		String encryptedPassword = "";
+		String planetCode = "";
 		long result;
 
 		//账号不能小于4
 		userAccount = "ma";
 		userPassword = "hhakhflahtoahr";
 		encryptedPassword = "hhakhflahtoahr";
-		result = userService.UserRegister(userAccount, userPassword, encryptedPassword);
+		result = userService.UserRegister(userAccount, userPassword, encryptedPassword,planetCode );
 		Assert.assertEquals(-1,result);
 
 		//密码不能小于8
 		userAccount = "jihhggakf";
 		userPassword = "jjj";
 		encryptedPassword = "jjj";
-		result = userService.UserRegister(userAccount, userPassword, encryptedPassword);
+		result = userService.UserRegister(userAccount, userPassword, encryptedPassword, planetCode);
 		Assert.assertEquals(-1,result);
 
 		//密码和校验密码相同
 		userAccount = "jihhggakf";
 		userPassword = "ma";
 		encryptedPassword = "werr";
-		result = userService.UserRegister(userAccount, userPassword, encryptedPassword);
+		result = userService.UserRegister(userAccount, userPassword, encryptedPassword, planetCode);
 		Assert.assertEquals(-1,result);
 
 		//用户名为空
 		userAccount = "";
 		userPassword = "werrhhhhhhh";
 		encryptedPassword = "werrhhhhhhh";
-		result = userService.UserRegister(userAccount, userPassword, encryptedPassword);
+		result = userService.UserRegister(userAccount, userPassword, encryptedPassword,planetCode );
 		Assert.assertEquals(-1,result);
 
 		//正常注册
 		userAccount = "Bella";
 		userPassword = "Bella123456";
 		encryptedPassword = "Bella123456";
-		result = userService.UserRegister(userAccount, userPassword, encryptedPassword);
+		result = userService.UserRegister(userAccount, userPassword, encryptedPassword, planetCode);
 		Assert.assertTrue(result > 0);
 
 	}
@@ -169,5 +170,13 @@ class UserServiceTest {
 		List<Long> ids = Arrays.asList(10L, 12L, 13L);
 		List<User> users = userService.testForeachIn(ids);
 		log.info(users.toString());
+	}
+
+	@Test
+	public void test(){
+		String str = "100% of the people love programming.";
+		System.out.println(str);
+		str = str.replaceAll("%", "\\\\%");
+		System.out.println(str);
 	}
 }

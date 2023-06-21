@@ -2,12 +2,15 @@ package com.example.myusercenterback.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.myusercenterback.common.ErrorCode;
+import com.example.myusercenterback.exception.BusinessException;
 import com.example.myusercenterback.model.User;
 import com.example.myusercenterback.service.UserService;
 import com.example.myusercenterback.mapper.UserMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -58,19 +61,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
 	@Override
-	public long UserRegister(String userAccount, String userPassword, String checkPassword) {
+	public long UserRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
 		//校验账户 密码 校验密码
 		if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-			return -1;
+			throw new BusinessException(ErrorCode.NULL_ERROR,"参数为空");
 		}
 		if (userAccount.length() < 4) {
-			return -1;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户名过短");
 		}
 		if (userPassword.length() < 8) {
-			return -1;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户密码过短");
 		}
 		if (!userPassword.equals(checkPassword)) {
-			return -1;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码和校验密码不一致");
+		}
+		if (planetCode.length() > 5) {
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"星球账号长度过长");
 		}
 
 		//账户不重复
@@ -78,7 +84,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 		queryWrapper.eq("userAccount",userAccount);
 		long count = this.count(queryWrapper);
 		if(count!=0){
-			return -1;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号已存在");
+		}
+
+		//星球账号不重复
+		queryWrapper = new QueryWrapper<>();
+		queryWrapper.eq("planetCode",planetCode);
+		count = this.count(queryWrapper);
+		if(count!=0){
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"星球编号已存在");
 		}
 
 		//对密码加密
@@ -89,10 +103,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 		User user = new User();
 		user.setUserAccount(userAccount);
 		user.setUserPassword(encryptedPassword);
+		user.setPlanetCode(planetCode);
 
 		boolean result = this.save(user);
 		if (!result) {//注意这个方法返回的long 实体类里面是Long 如果保存失败  id是null getId会报错
-			return -1;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"注册失败");
 		}
 		//如果查不到
 		return user.getId();
@@ -102,13 +117,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 	public User UserLogin(String userAccount, String userPassword, HttpServletRequest request) {
 		//校验
 		if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-			return null;
+			throw new BusinessException(ErrorCode.NULL_ERROR,"账号或者密码为空");
 		}
 		if (userAccount.length() < 4) {
-			return null;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号过短");
 		}
 		if (userPassword.length() < 8) {
-			return null;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码过短");
 		}
 
 		//对密码加密
@@ -122,7 +137,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 		if (user == null) {
 			//打印日志 可能用户真的不存在 或者是用户账号或者密码输入错误
 			log.info("user login failed");
-			return null;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户不存在登录失败");
 		}
 
 		//用户脱敏
@@ -147,17 +162,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 		SafeUser.setEmail(originalUser.getEmail());
 		SafeUser.setTags(originalUser.getTags());
 		SafeUser.setUserRole(originalUser.getUserRole());
+		SafeUser.setPlanetCode(originalUser.getPlanetCode());
 		SafeUser.setUserStatus(originalUser.getUserStatus());
 		SafeUser.setCreateTime(originalUser.getCreateTime());
 		SafeUser.setUpdateTime(originalUser.getUpdateTime());
 		return SafeUser;
-
 	}
 
 
 	//根据tag搜索用户
 	@Override
 	public List<User> getUsersByTags(List<String> tagsNameList) {
+		if(ObjectUtils.isEmpty(tagsNameList)){
+			throw new BusinessException(ErrorCode.NULL_ERROR,"标签为空");
+		}
 		//第一种方式 sql查询
 		// QueryWrapper<User> query = new QueryWrapper<>();
 		// for (String tagName : tagsNameList) {
@@ -190,30 +208,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //		userList.stream().map(this::getSafetyUser
 //		).collect(Collectors.toList());
 
-
-
-		// for (User user : userList) {
-		// 	String tags = user.getTags();
-		// 	Set<String> tagsSet = gson.fromJson(tags, new Type
-		//		// 		if(!tagsSet.contains(tag)){
-		//		// 			return false;Token<Set<String>>(){}.getType());
-		// 	for (String tag : tagsNameList) {
-		// 		}
-		// 	}
-		// 	return true;
-		// }
-
-
-
 		//语法糖
 		return  userList.stream().filter((user) -> {
-			String tags = user.getTags();
-			if(StringUtils.isBlank(tags)){
+			String userTags = user.getTags();
+			if(StringUtils.isBlank(userTags)){
 				return false;
 			}
-			Set<String> tagsSet = gson.fromJson(tags, new TypeToken<Set<String>>(){}.getType());
+			Set<String> userTagsSet = gson.fromJson(userTags, new TypeToken<Set<String>>(){}.getType());
 			for (String tag : tagsNameList) {
-				if(!tagsSet.contains(tag)){
+				if(!userTagsSet.contains(tag)){
 					return false;
 				}
 			}

@@ -1,6 +1,10 @@
 package com.example.myusercenterback.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.myusercenterback.common.BaseResponse;
+import com.example.myusercenterback.common.ErrorCode;
+import com.example.myusercenterback.common.ResultUtils;
+import com.example.myusercenterback.exception.BusinessException;
 import com.example.myusercenterback.model.User;
 import com.example.myusercenterback.model.request.UserLoginRequest;
 import com.example.myusercenterback.model.request.UserRegisterRequest;
@@ -33,65 +37,80 @@ public class UserController {
 	private UserService userService;
 
 	@PostMapping("/userRegistration")
-	public Long userRegistration(@RequestBody  UserRegisterRequest userRegisterRequest){
+	public BaseResponse<Long> userRegistration(@RequestBody  UserRegisterRequest userRegisterRequest){
 		if(userRegisterRequest == null){
-			return  null;
+//			return ResultUtils.error(ErrorCode.NULL_ERROR);
+			throw new BusinessException(ErrorCode.NULL_ERROR,"未传参 参数是null");
 		}
 		String userAccount = userRegisterRequest.getUserAccount();
 		String userPassword = userRegisterRequest.getUserPassword();
 		String checkPassword = userRegisterRequest.getCheckPassword();
-		if(StringUtils.isAnyBlank(userAccount,userPassword,checkPassword)){
-			return null;
+		String planetCode = userRegisterRequest.getPlanetCode();
+		if(StringUtils.isAnyBlank(userAccount,userPassword,checkPassword,planetCode)){
+			throw new BusinessException(ErrorCode.NULL_ERROR,"账号或者密码或者校验密码或者星球编码参数是null");
 		}
-
-		return  userService.UserRegister(userAccount, userPassword, checkPassword);
+		long usered = userService.UserRegister(userAccount, userPassword, checkPassword, planetCode);
+		return ResultUtils.success(usered);
 	}
 
 	@PostMapping("/userLogin")
-	public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
+	public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request){
 		if(userLoginRequest == null){
-			return  null;
+			throw new BusinessException(ErrorCode.NULL_ERROR,"未传参 参数是null");
 		}
 		String userAccount = userLoginRequest.getUserAccount();
 		String userPassword = userLoginRequest.getUserPassword();
 		if(StringUtils.isAnyBlank(userAccount,userPassword)){
-			return null;
+			throw new BusinessException(ErrorCode.NULL_ERROR,"未传用户账号或者密码");
 		}
-
-		return  userService.UserLogin(userAccount, userPassword,request);
+		User user = userService.UserLogin(userAccount, userPassword, request);
+		return  ResultUtils.success(user);
 	}
+
+
+	/**
+	 *用户注销账号
+	 */
+	@PostMapping("/userLogout")
+	public BaseResponse<Integer> userLogout(HttpServletRequest request){
+		request.getSession().removeAttribute(USER_LOGIN_STATE);
+		return ResultUtils.success(1);
+	}
+
 
 	//管理员根据名字查询
 	@GetMapping("/search")
-	List<User> searchByName(@RequestParam("username") String username,HttpServletRequest request){
+	public BaseResponse<List<User>> searchByName(@RequestParam("username") String username,HttpServletRequest request){
 		boolean admin = isAdmin(request);
 		if(!admin){
-			return new ArrayList<>();
+			throw new BusinessException(ErrorCode.NOT_AUTH,"不是管理员");
 		}
 
 		if(StringUtils.isBlank(username)){
-			return new ArrayList<>();
+			throw new BusinessException(ErrorCode.NULL_ERROR,"用户名为空");
 		}
 
 		QueryWrapper<User> queryWrapper = new QueryWrapper<>();
 		queryWrapper.like("username", username);
 		//脱敏
-		return userService.list(queryWrapper)
+		List<User> collect = userService.list(queryWrapper)
 				.stream()
 				.map(user -> userService.getSafetyUser(user))
 				.collect(Collectors.toList());
+		return ResultUtils.success(collect);
 	}
 
 	//管理员删除用户
 	@PostMapping("/deleteUser")
-	boolean deleteUser(@RequestBody Long userId,HttpServletRequest request){
-		if(isAdmin(request)){
-			return false;
+	public BaseResponse<Boolean> deleteUser(@RequestBody Long userId,HttpServletRequest request){
+		if(!isAdmin(request)){
+			throw new BusinessException(ErrorCode.NOT_AUTH,"不是管理员");
 		}
 		if(userId < 1){
-			return false;
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户id不可以小于0");
 		}
-		return userService.removeById(userId);
+		boolean id = userService.removeById(userId);
+		return ResultUtils.success(id);
 	}
 
 	//公共方法 判断是否是管理员
