@@ -1,12 +1,20 @@
 package com.example.myusercenterback.service;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.myusercenterback.mapper.UserMapper;
 import com.example.myusercenterback.model.User;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.annotation.Resource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,6 +32,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserServiceTest {
 	@Autowired
 	private UserService userService;
+	@Resource
+	private UserMapper userMapper;
 
 	/**
 	 * 简单测试mybaits的sava方法
@@ -153,16 +163,17 @@ class UserServiceTest {
 	public void userLogin() {
 
 
-	}
-
-	@Test
-	public void getUsersByTags() {
-
-		List<User> usersByTags = userService.getUsersByTags(Arrays.asList("唱", "跳", "篮球"));
-		System.out.println(usersByTags);
-		Assert.assertNotNull(usersByTags);
 
 	}
+
+//	@Test
+//	public void getUsersByTags() {
+//
+//		List<User> usersByTags = userService.getUsersByTags(Arrays.asList("唱", "跳", "篮球"));
+//		System.out.println(usersByTags);
+//		Assert.assertNotNull(usersByTags);
+//
+//	}
 
 
 	@Test
@@ -179,4 +190,69 @@ class UserServiceTest {
 		str = str.replaceAll("%", "\\\\%");
 		System.out.println(str);
 	}
+
+	//新增一万条数据到数据库
+	@Test
+	public void testInsert() {
+		List<User> list = new ArrayList<>();
+		for(int i = 10013;i<20000;i++){
+			User user = new User();
+			user.setId((long) i);
+			user.setUserPassword(i+"password");
+			user.setUserStatus(0);
+			user.setIsDelete(0);
+			user.setUserRole(0);
+			user.setPlanetCode(i+"planetCode");
+			list.add(user);
+		}
+		boolean b = userService.saveBatch(list);
+		Assert.assertTrue(b);
+	}
+
+	//测试sql时间
+	@Test
+	public void sqlTime(){
+		 QueryWrapper<User> query = new QueryWrapper<>();
+		 User user = userMapper.selectById(0L);//去掉第一次连接数据库的时间
+
+		long begin = System.currentTimeMillis();
+		List<String> tagsNameList = Arrays.asList("java","c++");
+		 for (String tagName : tagsNameList) {
+		 	query = query.like("tags",tagName);
+		 }
+		 List<User> userList = userMapper.selectList(query);
+		long end = System.currentTimeMillis();
+		log.info(String.valueOf(userList.size()));
+		log.info("sql时间"+(end-begin));
+	}
+
+	//测试内存时间
+	@Test
+	public void testJava(){
+		List<User> userList = userMapper.selectList(null);
+		Gson gson = new Gson();
+
+		long begin = System.currentTimeMillis();
+		List<String> tagsNameList = Arrays.asList("java","c++");
+		List<User> list = userList.stream().filter((user) -> {
+			String userTags = user.getTags();
+			if (StringUtils.isBlank(userTags)) {
+				return false;
+			}
+			Set<String> userTagsSet = gson.fromJson(userTags, new TypeToken<Set<String>>() {
+			}.getType());
+			for (String tag : tagsNameList) {
+				if (!userTagsSet.contains(tag)) {
+					return false;
+				}
+			}
+			return true;
+		}).collect(Collectors.toList());
+		long end = System.currentTimeMillis();
+		log.info(String.valueOf(list.size()));
+		log.info("内存时间"+(end-begin));
+	}
+
+
+
 }

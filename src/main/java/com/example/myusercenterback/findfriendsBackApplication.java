@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan("com.example.myusercenterback.mapper")
-public class MyUserCenterBackApplication {
+public class findfriendsBackApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MyUserCenterBackApplication.class, args);
+		SpringApplication.run(findfriendsBackApplication.class, args);
 	}
 
 }

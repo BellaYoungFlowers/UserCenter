@@ -29,4 +29,11 @@ public class BusinessException extends RuntimeException {
         this.description = description;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

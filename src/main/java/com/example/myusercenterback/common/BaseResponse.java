@@ -22,11 +22,21 @@ public class BaseResponse<T> implements Serializable {
     public BaseResponse(String code, T data, String message) {
        this(code, data,message,"");
     }
+
     public BaseResponse(String code, T data) {
         this(code, data,"","");
     }
     public BaseResponse(ErrorCode errorCode){
         this(errorCode.getCode(),null, errorCode.getMessage(), errorCode.getDescription());
+    }
+    public BaseResponse(ErrorCode errorCode,String description){
+        this(errorCode.getCode(),null, errorCode.getMessage(),description);
+    }
+    public BaseResponse(ErrorCode errorCode, String message, String description){
+        this(errorCode.getCode(),null,message, description);
+    }
+    public BaseResponse(String code, String message,String description ) {
+        this(code,null ,message,description);
     }
     private static final long serialVersionUID = 1905122041950251207L;
 }

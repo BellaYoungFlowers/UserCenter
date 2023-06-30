@@ -1,12 +1,22 @@
 spring:
+  profiles:
+    active: dev
   datasource:
     url: jdbc:mysql://localhost:3306/test?allowMultiQueries=true
     username: root
     password: root
+  application:
+    name: findfriends
+  mvc:
+    pathmatch:
+      # Springfox使用的路径匹配是基于AntPathMatcher的，而Spring Boot 2.6.X使用的是PathPatternMatcher
+      # 所以需要配置此参数
+      matching-strategy: ant_path_matcher
 server:
   port: 8001
   servlet:
     context-path: /api
+
 
 mybatis-plus:
   configuration:
@@ -18,3 +28,5 @@ mybatis-plus:
       logic-delete-value: 1 # 逻辑已删除值(默认为 1)
       logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+

@@ -12,4 +12,7 @@ public class ResultUtils {
     public static BaseResponse error(ErrorCode errorCode){
         return new BaseResponse(errorCode);
     }
+    public static BaseResponse error(String code,String message,String description){
+        return new BaseResponse(code,message,description);
+    }
 }

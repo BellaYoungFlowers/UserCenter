@@ -32,7 +32,7 @@ public interface UserService extends IService<User> {
     User getSafetyUser(User originalUser);
 
     //根据tag搜索用户
-	List<User> getUsersByTags(List<String> tagsNameList);
+//	List<User> getUsersByTags(List<String> tagsNameList);
 
 	void testForeachUpdate(List<User> userList);
 }

@@ -171,58 +171,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
 	//根据tag搜索用户
-	@Override
-	public List<User> getUsersByTags(List<String> tagsNameList) {
-		if(ObjectUtils.isEmpty(tagsNameList)){
-			throw new BusinessException(ErrorCode.NULL_ERROR,"标签为空");
-		}
-		//第一种方式 sql查询
-		// QueryWrapper<User> query = new QueryWrapper<>();
-		// for (String tagName : tagsNameList) {
-		// 	query = query.like("tags",tagName);
-		// }
-		// List<User> userList = userMapper.selectList(query);
-		// return userList;
-
-		//第二种方式 sql全查询 内存再进行条件查询
-		/**
-		 * 第一步 查出全部user
-		 * 第二步 遍历user 获取每个user的tags 将tags json对象转化为Set
-		 * 第三步 判断user的tag是否包含tagsNameList 只要有一个不包含 返回false
-		 */
-		List<User> userList = userMapper.selectList(null);
-		Gson gson = new Gson();
-
-
-		//脱敏 foreach写法
-//		userList.forEach(user->{
-//			getSafetyUser(user);
-//		});
-		//脱敏 lambda写法
-//		userList.forEach(this::getSafetyUser);
-		//脱敏 流操作
-//		userList.stream().map(user ->
-//			getSafetyUser(user)
-//		).collect(Collectors.toList());
-		//脱敏 流操作 lambda写法
-//		userList.stream().map(this::getSafetyUser
-//		).collect(Collectors.toList());
-
-		//语法糖
-		return  userList.stream().filter((user) -> {
-			String userTags = user.getTags();
-			if(StringUtils.isBlank(userTags)){
-				return false;
-			}
-			Set<String> userTagsSet = gson.fromJson(userTags, new TypeToken<Set<String>>(){}.getType());
-			for (String tag : tagsNameList) {
-				if(!userTagsSet.contains(tag)){
-					return false;
-				}
-			}
-			return true;
-		}).map(this::getSafetyUser).collect(Collectors.toList());
-	}
+//	@Override
+//	public List<User> getUsersByTags(List<String> tagsNameList) {
+//		if(ObjectUtils.isEmpty(tagsNameList)){
+//			throw new BusinessException(ErrorCode.NULL_ERROR,"标签为空");
+//		}
+//		//第一种方式 sql查询
+//		// QueryWrapper<User> query = new QueryWrapper<>();
+//		// for (String tagName : tagsNameList) {
+//		// 	query = query.like("tags",tagName);
+//		// }
+//		// List<User> userList = userMapper.selectList(query);
+//		// return userList;
+//
+//		//第二种方式 sql全查询 内存再进行条件查询
+//		/**
+//		 * 第一步 查出全部user
+//		 * 第二步 遍历user 获取每个user的tags 将tags json对象转化为Set
+//		 * 第三步 判断user的tag是否包含tagsNameList 只要有一个不包含 返回false
+//		 */
+//		List<User> userList = userMapper.selectList(null);
+//		Gson gson = new Gson();
+//
+//
+//		//脱敏 foreach写法
+////		userList.forEach(user->{
+////			getSafetyUser(user);
+////		});
+//		//脱敏 lambda写法
+////		userList.forEach(this::getSafetyUser);
+//		//脱敏 流操作
+////		userList.stream().map(user ->
+////			getSafetyUser(user)
+////		).collect(Collectors.toList());
+//		//脱敏 流操作 lambda写法
+////		userList.stream().map(this::getSafetyUser
+////		).collect(Collectors.toList());
+//
+//		//语法糖
+//		return  userList.stream().filter((user) -> {
+//			String userTags = user.getTags();
+//			if(StringUtils.isBlank(userTags)){
+//				return false;
+//			}
+//			Set<String> userTagsSet = gson.fromJson(userTags, new TypeToken<Set<String>>(){}.getType());
+//			for (String tag : tagsNameList) {
+//				if(!userTagsSet.contains(tag)){
+//					return false;
+//				}
+//			}
+//			return true;
+//		}).map(this::getSafetyUser).collect(Collectors.toList());
+//	}
 
 }
 
