@@ -2,9 +2,9 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:mysql://localhost:3306/test?allowMultiQueries=true
+    url: jdbc:mysql://localhost:3306/yupao?allowMultiQueries=true
     username: root
-    password: root
+    password: 123456
   application:
     name: findfriends
   mvc:
@@ -12,11 +12,15 @@ spring:
       # Springfox使用的路径匹配是基于AntPathMatcher的，而Spring Boot 2.6.X使用的是PathPatternMatcher
       # 所以需要配置此参数
       matching-strategy: ant_path_matcher
+  redis:
+    port: 6379
+    host: localhost
+    database: 1
+
 server:
   port: 8001
   servlet:
     context-path: /api
-
 
 mybatis-plus:
   configuration:

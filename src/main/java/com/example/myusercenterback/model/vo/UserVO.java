@@ -1,22 +1,17 @@
-package com.example.myusercenterback.model;
+package com.example.myusercenterback.model.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
- * 用户
- * @TableName user
+ * @author:xxxxx
+ * @create: 2023-07-26 16:00
+ * @Description: 展示的用户信息
  */
-@TableName(value ="user")
 @Data
-public class User implements Serializable {
-    /**
-     * id
-     */
-    @TableId(type = IdType.AUTO)
+public class UserVO implements Serializable {
     private Long id;
 
     /**
@@ -88,12 +83,4 @@ public class User implements Serializable {
      */
     private String planetCode;
 
-    /**
-     * 是否删除
-     */
-    @TableLogic
-    private Integer isDelete;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 }

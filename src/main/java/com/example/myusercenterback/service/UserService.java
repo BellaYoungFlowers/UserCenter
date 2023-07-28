@@ -1,6 +1,6 @@
 package com.example.myusercenterback.service;
 
-import com.example.myusercenterback.model.User;
+import com.example.myusercenterback.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,4 +35,13 @@ public interface UserService extends IService<User> {
 //	List<User> getUsersByTags(List<String> tagsNameList);
 
 	void testForeachUpdate(List<User> userList);
+
+    User getLoginUser(HttpServletRequest request);
+
+	/**
+	 * 是否是管理员
+	 * @param request
+	 * @return
+	 */
+	boolean isAdmin(HttpServletRequest request);
 }

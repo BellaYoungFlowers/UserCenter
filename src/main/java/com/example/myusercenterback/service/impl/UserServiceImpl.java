@@ -3,14 +3,12 @@ package com.example.myusercenterback.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.myusercenterback.common.ErrorCode;
+import com.example.myusercenterback.constant.UserConstant;
 import com.example.myusercenterback.exception.BusinessException;
-import com.example.myusercenterback.model.User;
+import com.example.myusercenterback.model.domain.User;
 import com.example.myusercenterback.service.UserService;
 import com.example.myusercenterback.mapper.UserMapper;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -19,9 +17,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+import static com.example.myusercenterback.constant.UserConstant.ADMIN_ROLE;
 import static com.example.myusercenterback.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -33,6 +30,14 @@ import static com.example.myusercenterback.constant.UserConstant.USER_LOGIN_STAT
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService {
+	@Override
+	public boolean isAdmin(HttpServletRequest request) {
+		if(request == null){
+			throw  new BusinessException(ErrorCode.NULL_ERROR);
+		}
+		User user = (User)request.getSession().getAttribute(USER_LOGIN_STATE);
+		return user != null && user.getUserRole() == UserConstant.ADMIN_ROLE;
+	}
 
 	@Resource
 	private UserMapper userMapper;
@@ -51,6 +56,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 	public void testForeachUpdate(List<User> userList) {
 		userMapper.testForeachUpdate(userList);
 
+	}
+
+	/**
+	 * @param request
+	 * @return
+	 * 获取登录用户信息
+	 */
+	@Override
+	public User getLoginUser(HttpServletRequest request) {
+		if(request == null){
+			return null;
+		}
+		Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+		if(userObj == null){
+			throw new BusinessException(ErrorCode.NOT_AUTH);
+		}
+		return (User)userObj;
 	}
 
 	//测试foreach in

@@ -35,7 +35,7 @@ public class DemoDataListener implements ReadListener<DemoData> {
      */
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
-        log.info("所有数据解析完成！");
+
     }
 
 
