@@ -8,20 +8,31 @@ import com.example.myusercenterback.common.ResultUtils;
 import com.example.myusercenterback.exception.BusinessException;
 import com.example.myusercenterback.model.domain.Team;
 import com.example.myusercenterback.model.domain.User;
+import com.example.myusercenterback.model.domain.UserTeam;
 import com.example.myusercenterback.model.dto.TeamQuery;
 import com.example.myusercenterback.model.request.TeamAddRequest;
-import com.example.myusercenterback.model.vo.TeamUserVo;
+import com.example.myusercenterback.model.request.TeamJoinRequest;
+import com.example.myusercenterback.model.request.TeamQuitRequest;
+import com.example.myusercenterback.model.request.TeamUpdateRequest;
+import com.example.myusercenterback.model.vo.TeamUserVO;
 import com.example.myusercenterback.service.TeamService;
 import com.example.myusercenterback.service.UserService;
+import com.example.myusercenterback.service.UserTeamService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author:xxxxx
@@ -36,6 +47,8 @@ public class TeamController {
     private UserService userService;
     @Resource
     private TeamService teamService;
+    @Resource
+    private UserTeamService userTeamService;
 
     //新增
     @PostMapping("/add")
@@ -53,38 +66,49 @@ public class TeamController {
 
     //修改
     @PostMapping("/update")
-    public BaseResponse<Long> updateTeam(Team team) {
-        if(team == null){
-            throw new BusinessException(ErrorCode.NULL_ERROR,"新增队伍数据为空");
+    public  BaseResponse<Boolean>  updateTeam(TeamUpdateRequest request, HttpServletRequest httpServletRequest) {
+        if(request == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"修改队伍数据为空");
         }
-        boolean updateById = teamService.updateById(team);
-        if(!updateById){
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"更新队伍数据失败");
+        User loginUser = userService.getLoginUser(httpServletRequest);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_AUTH,"修改队伍信息必须登录");
         }
-        return ResultUtils.success(team.getId());
+        boolean result = teamService.updateTeam(request,loginUser);
+        return ResultUtils.success(result);
     }
 
-    //查询list
-//    @PostMapping("/list")
-//    public BaseResponse<List<Team>> getList(TeamQuery teamQuery){
-//        if(teamQuery == null){
-//            throw new BusinessException(ErrorCode.NULL_ERROR,"查询条件为空");
-//        }
-//        Team team = new Team();
-//        BeanUtils.copyProperties(teamQuery,team);
-//        QueryWrapper<Team> teamQueryWrapper = new QueryWrapper<Team>(team);
-//        List<Team> resultList = teamService.list(teamQueryWrapper);
-//        return ResultUtils.success(resultList);
-//    }
 
+    //加入队伍
+    @PostMapping("/join")
+    public BaseResponse<Boolean> joinTeam(TeamJoinRequest request,HttpServletRequest httpServletRequest){
+        if(request == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"修改队伍数据为空");
+        }
+        User loginUser = userService.getLoginUser(httpServletRequest);
+        boolean result = teamService.joinTeam(request,loginUser);
+        return ResultUtils.success(result);
+    }
 
+    //退出队伍
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(TeamQuitRequest request, HttpServletRequest httpServletRequest){
+        if(request == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"退出队伍数据为空");
+        }
+        User loginUser = userService.getLoginUser(httpServletRequest);
+        boolean result = teamService.quitTeam(request,loginUser);
+        return ResultUtils.success(result);
+    }
+
+    //查询队伍list
     @PostMapping("/list")
-    public BaseResponse<List<TeamUserVo>> getList(TeamQuery teamQuery,HttpServletRequest request){
+    public BaseResponse<List<TeamUserVO>> getList(TeamQuery teamQuery, HttpServletRequest request){
         if(teamQuery == null){
             throw new BusinessException(ErrorCode.NULL_ERROR,"查询条件为空");
         }
         boolean admin = userService.isAdmin(request);
-        List<TeamUserVo> resultList = teamService.getTeamList(teamQuery, admin);
+        List<TeamUserVO> resultList = teamService.getTeamList(teamQuery, admin);
         return ResultUtils.success(resultList);
     }
 
@@ -101,5 +125,79 @@ public class TeamController {
         QueryWrapper<Team> teamQueryWrapper = new QueryWrapper<Team>(team);
         Page<Team> resultPage = teamService.page(new Page<>(teamQuery.getPageNum(),teamQuery.getPageSize()), teamQueryWrapper);
         return ResultUtils.success(resultPage);
+    }
+
+    /**
+     * 获取我创建的队伍
+     *
+     * @param teamQuery
+     * @param request
+     * @return
+     */
+    @GetMapping("/list/my/create")
+    public BaseResponse<List<TeamUserVO>> listMyCreateTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if(teamQuery == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"查询条件为空");
+        }
+        if(request == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"查询条件为空");
+        }
+        User loginUser = userService.getLoginUser(request);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        Long userId = loginUser.getId();
+        if(userId == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        teamQuery.setUserId(userId);
+        List<TeamUserVO> teamList = teamService.getTeamList(teamQuery, true);
+        return ResultUtils.success(teamList);
+    }
+
+
+    /**
+     * 获取我加入的队伍
+     *
+     * @param teamQuery
+     * @param request
+     * @return
+     */
+    @GetMapping("/list/my/join")
+    public BaseResponse<List<TeamUserVO>> listMyJoinTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if(teamQuery == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"查询条件为空");
+        }
+        if(request == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"查询条件为空");
+        }
+        User loginUser = userService.getLoginUser(request);
+        if(loginUser == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        Long userId = loginUser.getId();
+        if(userId == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<UserTeam>();
+        queryWrapper.eq("userId",userId);
+
+        /**
+         * userId teamId
+         *  1     2
+         *  1     3
+         *  1     3
+         *
+         *  2 =》1
+         *  3 =》1,1？
+         */
+
+        List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+        //防止有重的数据 根据队伍分组 获取队伍id
+        Map<Long, List<UserTeam>> listMap = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        ArrayList<Long> teamIds = new ArrayList<>(listMap.keySet());
+        teamQuery.setIdList(teamIds);
+        List<TeamUserVO> teamList = teamService.getTeamList(teamQuery, true);
+        return ResultUtils.success(teamList);
     }
 }

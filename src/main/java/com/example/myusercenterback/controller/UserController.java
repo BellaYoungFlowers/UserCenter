@@ -156,4 +156,16 @@ public class UserController {
 
 		//无缓存第一次查询数据库还是存在慢的问题 用定时任务缓存预热
 	}
+
+	//匹配用户
+	@GetMapping(value = "/match")
+	public BaseResponse<List<User>> matchUsers(int num,HttpServletRequest request){
+		if(num < 0 || num > 20){
+			throw new BusinessException(ErrorCode.PARAMS_ERROR,"Invalid number");
+		}
+		User loginUser = userService.getLoginUser(request);
+		List<User> userList = userService.matchUsers(num,loginUser);
+		return ResultUtils.success(userList);
+	}
+
 }

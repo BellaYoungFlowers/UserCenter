@@ -1,5 +1,6 @@
 package com.example.myusercenterback.service;
 
+import com.example.myusercenterback.common.BaseResponse;
 import com.example.myusercenterback.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -44,4 +45,14 @@ public interface UserService extends IService<User> {
 	 * @return
 	 */
 	boolean isAdmin(HttpServletRequest request);
+	boolean isAdmin(User loginUser);
+
+	/**
+	 * 根据tags匹配用户
+	 * @param num
+	 * @param loginUser
+	 * @return
+	 */
+
+	List<User> matchUsers(int num, User loginUser);
 }

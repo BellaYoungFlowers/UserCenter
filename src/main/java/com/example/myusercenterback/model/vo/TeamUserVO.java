@@ -12,7 +12,7 @@ import java.util.List;
  * @Description: 根据查询条件，展示队伍信息同时返回队伍信息
  */
 @Data
-public class TeamUserVo implements Serializable {
+public class TeamUserVO implements Serializable {
     private static final long serialVersionUID = 1899063007109226944L;
 
     /**
